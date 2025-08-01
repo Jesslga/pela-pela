@@ -1,0 +1,5 @@
+{
+    "UserId": "AROARTP3RML5WUGYINZGE:test-session",
+    "Account": "110586061563",
+    "Arn": "arn:aws:sts::110586061563:assumed-role/pelapela-semantic-lambda-role/test-session"
+}

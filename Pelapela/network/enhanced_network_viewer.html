@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Japanese Learning Network</title>
+    <script src="lib/vis-9.1.2/vis-network.min.js"></script>
+    <link href="lib/vis-9.1.2/vis-network.css" rel="stylesheet" type="text/css" />
+    <script src="lib/tom-select/tom-select.complete.min.js"></script>
+    <link href="lib/tom-select/tom-select.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .network-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #network {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stats h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .topic-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .topic-info h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+            font-size: 16px;
+        }
+        
+        .topic-details {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .concept-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .concept-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .concept-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .concept-item:last-child {
+            border-bottom: none;
+        }
+        
+        .concept-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .concept-source {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .concept-confidence {
+            color: #2196f3;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .loading h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .legend {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .topic-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .topic-btn {
+            padding: 6px 12px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            color: #333;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .topic-btn:hover {
+            border-color: #2196f3;
+            color: #2196f3;
+        }
+        
+        .topic-btn.active {
+            background: #2196f3;
+            border-color: #2196f3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>Enhanced Network</h1>
+                <p>Japanese Learning Concept Network with Enhanced Topic Detection</p>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Topic Filters:</label>
+                    <div id="topicButtons" class="topic-buttons">
+                        <!-- Topic buttons will be dynamically generated -->
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="nodeTypeFilter">Node Type Filter:</label>
+                    <select id="nodeTypeFilter">
+                        <option value="all">All Nodes</option>
+                        <option value="concept">Concepts Only</option>
+                        <option value="topic">Enhanced Topics Only</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="sourceFilter">Source Filter:</label>
+                    <select id="sourceFilter">
+                        <option value="all">All Sources</option>
+                        <option value="jlpt">JLPT</option>
+                        <option value="taekim">Tae Kim</option>
+                        <option value="anki">Anki</option>
+                        <option value="guidebook">Guidebook</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="confidenceThreshold">Min Confidence:</label>
+                    <input type="range" id="confidenceThreshold" min="0" max="1" step="0.1" value="0.5">
+                    <span id="confidenceValue">0.5</span>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <h3>Legend</h3>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    <span>Grammar Concepts</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3;"></div>
+                    <span>Vocabulary</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF9800;"></div>
+                    <span>Kanji</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9C27B0;"></div>
+                    <span>Expressions</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #F44336;"></div>
+                    <span>Enhanced Topics</span>
+                </div>
+            </div>
+            
+            <div class="stats" id="stats">
+                <h3>Network Statistics</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Concepts:</span>
+                    <span class="stat-value" id="totalConcepts">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Enhanced Topics:</span>
+                    <span class="stat-value" id="totalTopics">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Topic Relationships:</span>
+                    <span class="stat-value" id="totalRelationships">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Average Confidence:</span>
+                    <span class="stat-value" id="avgConfidence">-</span>
+                </div>
+            </div>
+            
+            <div class="topic-info" id="topicInfo" style="display: none;">
+                <h3>Selected Topic</h3>
+                <div class="topic-details" id="topicDetails"></div>
+            </div>
+            
+            <div class="concept-list" id="conceptList" style="display: none;">
+                <h3>Related Concepts</h3>
+                <div id="conceptItems"></div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="network-container">
+                <div id="network"></div>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <h3>Loading Enhanced Network...</h3>
+                    <p>Please wait while we load the enhanced topic detection data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let network = null;
+        let allNodes = [];
+        let allEdges = [];
+        let topicNodes = [];
+        let conceptNodes = [];
+        let topicRelationships = [];
+        
+        // Load enhanced network data
+        async function loadEnhancedNetwork() {
+            try {
+                console.log('Loading enhanced network data...');
+                
+                // Load enhanced topic nodes
+                const topicResponse = await fetch('concept_network/enhanced_topic_nodes.json');
+                topicNodes = await topicResponse.json();
+                
+                // Load enhanced topic relationships
+                const relationshipResponse = await fetch('concept_network/enhanced_topic_relationships.json');
+                topicRelationships = await relationshipResponse.json();
+                
+                // Load complete enhanced network (sample for performance)
+                const networkResponse = await fetch('concept_network/complete_enhanced_network.json');
+                const allConcepts = await networkResponse.json();
+                
+                // Take a sample for visualization (first 500 concepts)
+                conceptNodes = allConcepts.slice(0, 500);
+                
+                console.log(`Loaded ${topicNodes.length} topic nodes, ${topicRelationships.length} relationships, ${conceptNodes.length} concepts`);
+                
+                // Build network data
+                buildNetworkData();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error loading enhanced network data:', error);
+                document.getElementById('loading').innerHTML = `
+                    <h3>Error Loading Data</h3>
+                    <p>Failed to load enhanced network data. Please check the console for details.</p>
+                `;
+            }
+        }
+        
+        // Build network data from loaded concepts and topics
+        function buildNetworkData() {
+            allNodes = [];
+            allEdges = [];
+            
+            // Add concept nodes
+            conceptNodes.forEach((concept, index) => {
+                const nodeColor = getNodeColor(concept.type || 'vocabulary');
+                
+                allNodes.push({
+                    id: concept.id,
+                    label: concept.title || concept.id,
+                    title: `${concept.title || concept.id}\nType: ${concept.type || 'vocabulary'}\nSource: ${concept.source || 'unknown'}`,
+                    color: nodeColor,
+                    size: 20,
+                    type: 'concept',
+                    conceptData: concept
+                });
+            });
+            
+            // Add topic nodes
+            topicNodes.forEach(topic => {
+                allNodes.push({
+                    id: topic.id,
+                    label: topic.title,
+                    title: `${topic.title}\nConcepts: ${topic.metadata.total_concepts}\nAvg Confidence: ${topic.metadata.average_confidence.toFixed(3)}`,
+                    color: '#F44336',
+                    size: 40,
+                    type: 'topic',
+                    topicData: topic
+                });
+            });
+            
+            // Add topic relationships
+            topicRelationships.forEach(rel => {
+                allEdges.push({
+                    from: rel.source,
+                    to: rel.target,
+                    title: `Confidence: ${rel.metadata.confidence_score.toFixed(3)}\nSource: ${rel.metadata.source}`,
+                    width: rel.metadata.confidence_score * 5 + 1,
+                    color: {
+                        color: '#666',
+                        opacity: 0.6
+                    },
+                    arrows: 'to'
+                });
+            });
+            
+            // Update statistics
+            updateStatistics();
+            
+            // Create topic buttons
+            createTopicButtons();
+            
+            // Create network
+            createNetwork();
+        }
+        
+        // Get node color based on concept type
+        function getNodeColor(type) {
+            const colors = {
+                'grammar': '#4CAF50',
+                'vocabulary': '#2196F3',
+                'kanji': '#FF9800',
+                'expression': '#9C27B0',
+                'topic': '#F44336'
+            };
+            return colors[type] || '#9E9E9E';
+        }
+        
+        // Create the network visualization
+        function createNetwork() {
+            const container = document.getElementById('network');
+            
+            const data = {
+                nodes: new vis.DataSet(allNodes),
+                edges: new vis.DataSet(allEdges)
+            };
+            
+            const options = {
+                nodes: {
+                    shape: 'circle',
+                    font: {
+                        size: 12,
+                        face: 'Arial'
+                    },
+                    borderWidth: 2,
+                    shadow: true
+                },
+                edges: {
+                    smooth: {
+                        type: 'continuous',
+                        forceDirection: 'none'
+                    },
+                    shadow: true
+                },
+                physics: {
+                    enabled: true,
+                    solver: 'forceAtlas2Based',
+                    forceAtlas2Based: {
+                        gravitationalConstant: -50,
+                        centralGravity: 0.01,
+                        springLength: 100,
+                        springConstant: 0.08,
+                        damping: 0.4,
+                        avoidOverlap: 0.5
+                    },
+                    stabilization: {
+                        enabled: true,
+                        iterations: 1000,
+                        updateInterval: 100
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 200,
+                    zoomView: true,
+                    dragView: true
+                }
+            };
+            
+            network = new vis.Network(container, data, options);
+            
+            // Add event listeners
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const node = allNodes.find(n => n.id === nodeId);
+                    
+                    if (node && node.type === 'topic') {
+                        showTopicInfo(node);
+                    } else if (node && node.type === 'concept') {
+                        showConceptInfo(node);
+                    }
+                }
+            });
+            
+            network.on('stabilizationProgress', function(params) {
+                console.log('Stabilization progress:', params.iterations, '/', params.total);
+            });
+            
+            network.on('stabilizationIterationsDone', function() {
+                console.log('Network stabilized');
+            });
+        }
+        
+        // Show topic information
+        function showTopicInfo(topicNode) {
+            const topicData = topicNode.topicData;
+            const topicId = topicNode.id;
+            
+            // Get related concepts
+            const relatedConcepts = topicRelationships
+                .filter(rel => rel.target === topicId)
+                .map(rel => {
+                    const concept = conceptNodes.find(c => c.id === rel.source);
+                    return {
+                        ...concept,
+                        confidence: rel.metadata.confidence_score,
+                        source: rel.metadata.source
+                    };
+                })
+                .filter(concept => concept.id); // Filter out undefined concepts
+            
+            // Update topic info
+            document.getElementById('topicDetails').innerHTML = `
+                <p><strong>Title:</strong> ${topicData.title}</p>
+                <p><strong>Total Concepts:</strong> ${topicData.metadata.total_concepts}</p>
+                <p><strong>Average Confidence:</strong> ${topicData.metadata.average_confidence.toFixed(3)}</p>
+                <p><strong>Sources:</strong> ${topicData.metadata.sources.join(', ')}</p>
+                <p><strong>Japanese Keywords:</strong> ${topicData.metadata.japanese_keywords.join(', ')}</p>
+                <p><strong>English Keywords:</strong> ${topicData.metadata.english_keywords.join(', ')}</p>
+            `;
+            
+            // Update concept list
+            const conceptItems = document.getElementById('conceptItems');
+            conceptItems.innerHTML = '';
+            
+            relatedConcepts.forEach(concept => {
+                const item = document.createElement('div');
+                item.className = 'concept-item';
+                item.innerHTML = `
+                    <div class="concept-title">${concept.title || concept.id}</div>
+                    <div class="concept-source">Source: ${concept.source || 'unknown'}</div>
+                    <div class="concept-confidence">Confidence: ${concept.confidence.toFixed(3)}</div>
+                `;
+                conceptItems.appendChild(item);
+            });
+            
+            // Show info panels
+            document.getElementById('topicInfo').style.display = 'block';
+            document.getElementById('conceptList').style.display = 'block';
+        }
+        
+        // Show concept information
+        function showConceptInfo(conceptNode) {
+            const conceptData = conceptNode.conceptData;
+            
+            // Get related topics
+            const relatedTopics = topicRelationships
+                .filter(rel => rel.source === conceptNode.id)
+                .map(rel => {
+                    const topic = topicNodes.find(t => t.id === rel.target);
+                    return {
+                        ...topic,
+                        confidence: rel.metadata.confidence_score
+                    };
+                })
+                .filter(topic => topic.id);
+            
+            // Update topic info
+            document.getElementById('topicDetails').innerHTML = `
+                <p><strong>Concept:</strong> ${conceptData.title || conceptData.id}</p>
+                <p><strong>Type:</strong> ${conceptData.type || 'vocabulary'}</p>
+                <p><strong>Source:</strong> ${conceptData.source || 'unknown'}</p>
+                <p><strong>Related Topics:</strong> ${relatedTopics.length}</p>
+            `;
+            
+            // Update concept list
+            const conceptItems = document.getElementById('conceptItems');
+            conceptItems.innerHTML = '';
+            
+            relatedTopics.forEach(topic => {
+                const item = document.createElement('div');
+                item.className = 'concept-item';
+                item.innerHTML = `
+                    <div class="concept-title">${topic.title}</div>
+                    <div class="concept-source">Topic</div>
+                    <div class="concept-confidence">Confidence: ${topic.confidence.toFixed(3)}</div>
+                `;
+                conceptItems.appendChild(item);
+            });
+            
+            // Show info panels
+            document.getElementById('topicInfo').style.display = 'block';
+            document.getElementById('conceptList').style.display = 'block';
+        }
+        
+        // Update network statistics
+        function updateStatistics() {
+            document.getElementById('totalConcepts').textContent = conceptNodes.length.toLocaleString();
+            document.getElementById('totalTopics').textContent = topicNodes.length;
+            document.getElementById('totalRelationships').textContent = topicRelationships.length;
+            
+            if (topicRelationships.length > 0) {
+                const avgConfidence = topicRelationships.reduce((sum, rel) => sum + rel.metadata.confidence_score, 0) / topicRelationships.length;
+                document.getElementById('avgConfidence').textContent = avgConfidence.toFixed(3);
+            } else {
+                document.getElementById('avgConfidence').textContent = '0.000';
+            }
+        }
+        
+        // Create topic toggle buttons
+        function createTopicButtons() {
+            const topicButtonsContainer = document.getElementById('topicButtons');
+            topicButtonsContainer.innerHTML = '';
+            
+            topicNodes.forEach(topic => {
+                const button = document.createElement('button');
+                button.className = 'topic-btn';
+                button.textContent = topic.title;
+                button.dataset.topicId = topic.id;
+                
+                button.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    applyTopicFilters();
+                });
+                
+                topicButtonsContainer.appendChild(button);
+            });
+        }
+        
+        // Apply topic filters
+        function applyTopicFilters() {
+            const activeTopics = Array.from(document.querySelectorAll('.topic-btn.active'))
+                .map(btn => btn.dataset.topicId);
+            
+            let filteredNodes = allNodes;
+            let filteredEdges = allEdges;
+            
+            if (activeTopics.length > 0) {
+                // Get concepts related to active topics
+                const relatedConceptIds = topicRelationships
+                    .filter(rel => activeTopics.includes(rel.target))
+                    .map(rel => rel.source);
+                
+                // Filter nodes to show only topic nodes and related concept nodes
+                filteredNodes = allNodes.filter(node => {
+                    if (node.type === 'topic') return true;
+                    return relatedConceptIds.includes(node.id);
+                });
+                
+                // Filter edges to show only relationships involving active topics
+                filteredEdges = allEdges.filter(edge => {
+                    return activeTopics.includes(edge.to) || activeTopics.includes(edge.from);
+                });
+            }
+            
+            network.setData({
+                nodes: new vis.DataSet(filteredNodes),
+                edges: new vis.DataSet(filteredEdges)
+            });
+        }
+        
+        // Filter controls
+        document.getElementById('nodeTypeFilter').addEventListener('change', function() {
+            const filter = this.value;
+            const nodes = allNodes.filter(node => {
+                if (filter === 'all') return true;
+                return node.type === filter;
+            });
+            
+            network.setData({
+                nodes: new vis.DataSet(nodes),
+                edges: new vis.DataSet(allEdges)
+            });
+        });
+        
+        document.getElementById('sourceFilter').addEventListener('change', function() {
+            const filter = this.value;
+            const nodes = allNodes.filter(node => {
+                if (filter === 'all') return true;
+                if (node.type === 'topic') return true;
+                return node.conceptData && node.conceptData.source === filter;
+            });
+            
+            const edges = allEdges.filter(edge => {
+                if (filter === 'all') return true;
+                const relationship = topicRelationships.find(rel => 
+                    rel.source === edge.from && rel.target === edge.to
+                );
+                return relationship && relationship.metadata.source === filter;
+            });
+            
+            network.setData({
+                nodes: new vis.DataSet(nodes),
+                edges: new vis.DataSet(edges)
+            });
+        });
+        
+        document.getElementById('confidenceThreshold').addEventListener('input', function() {
+            const threshold = parseFloat(this.value);
+            document.getElementById('confidenceValue').textContent = threshold.toFixed(1);
+            
+            const edges = allEdges.filter(edge => {
+                const relationship = topicRelationships.find(rel => 
+                    rel.source === edge.from && rel.target === edge.to
+                );
+                return relationship && relationship.metadata.confidence_score >= threshold;
+            });
+            
+            network.setData({
+                nodes: new vis.DataSet(allNodes),
+                edges: new vis.DataSet(edges)
+            });
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEnhancedNetwork();
+        });
+    </script>
+</body>
+</html>
