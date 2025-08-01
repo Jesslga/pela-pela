@@ -105,23 +105,3 @@ source venv/bin/activate  # or `venv\Scripts\activate` on Windows
 # Install dependencies
 pip install -r aws_semantic_pipeline/requirements.txt
 ```
-
-## 📈 Performance
-
-- **Pre-cleanup**: 797 scripts, 5.5GB, massive redundancy
-- **Post-cleanup**: ~20 scripts, ~60MB core system, 99%+ reduction
-- **Processing**: Handles 6,000+ concepts across 4 sources
-- **Deduplication**: Intelligent semantic merging vs. exact string matching
-
-## 🌟 What's New
-
-This is a completely streamlined version that:
-- ✅ Eliminates 99% of redundant experimental code
-- ✅ Combines the best of local + cloud processing  
-- ✅ Uses AWS for heavy semantic lifting
-- ✅ Maintains all data sources with minimal scripts
-- ✅ Provides clear local → cloud workflow
-
----
-
-**Built for Japanese language learners who want AI-powered concept discovery.**
