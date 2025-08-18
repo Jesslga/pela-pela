@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pelapela:schemas:vocabulary_entry:v1",
+  "title": "Vocabulary Entry",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "type",
+    "lemma",
+    "meanings",
+    "examples",
+    "tags",
+    "relations"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string", "const": "vocabulary_entry" },
+    "lemma": { "type": "string" },
+    "reading": { "type": "string", "default": "" },
+    "pos": { "type": "string", "default": "" },
+    "meanings": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "topics": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "examples": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["ja"],
+        "properties": {
+          "ja": { "type": "string" },
+          "en": { "type": "string", "default": "" }
+        }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "relations": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["type", "target_id"],
+        "properties": {
+          "type": { "type": "string" },
+          "target_id": { "type": "string" }
+        }
+      }
+    },
+    "embedding": {
+      "type": ["array", "null"],
+      "items": { "type": "number" },
+      "default": null
+    }
+  }
+}
+

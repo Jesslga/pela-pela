@@ -1,0 +1,5 @@
+spacy>=3.7.0
+ja-ginza>=5.2.0
+jsonschema>=4.22.0
+networkx>=3.0
+matplotlib>=3.8

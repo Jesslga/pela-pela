@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pelapela:schemas:grammar_pattern:v1",
+  "title": "Grammar Pattern",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "type",
+    "title",
+    "description",
+    "language",
+    "examples",
+    "tags",
+    "relations"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string", "const": "grammar_pattern" },
+    "title": { "type": "string" },
+    "description": { "type": "string", "default": "" },
+    "language": { "type": "string", "default": "ja" },
+    "jlpt_level": { "type": "string", "default": "" },
+    "usage": {
+      "type": "object",
+      "default": {},
+      "properties": {
+        "form": { "type": "string", "default": "" },
+        "constraints": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "polarity": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    },
+    "examples": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["ja"],
+        "properties": {
+          "ja": { "type": "string" },
+          "en": { "type": "string", "default": "" }
+        }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" }, "default": [] },
+    "sources": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "object", "properties": { "name": { "type": "string" }, "id": { "type": "string" } } }
+    },
+    "relations": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["type", "target_id"],
+        "properties": {
+          "type": { "type": "string" },
+          "target_id": { "type": "string" }
+        }
+      }
+    },
+    "embedding": {
+      "type": ["array", "null"],
+      "items": { "type": "number" },
+      "default": null
+    }
+  }
+}
+
